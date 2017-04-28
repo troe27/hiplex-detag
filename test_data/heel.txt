@@ -1,0 +1,9 @@
+
+#
+##comment_line
+#ctctctatgggcagtc;ctcgtgtctccgact
+#ctcgtgtctccgact;ctctctatgggcagtc
+CTCTCTATGGGCAGTC;CTCGTGTCTCCGACT
+#
+
+##comment
