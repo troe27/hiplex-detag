@@ -15,8 +15,6 @@ def cli_parser():
     - parses the command line interface.                                                           
     - outputs the specified parameters and filenames into a job-dictionary.                        
     '''
-    #start_time_machine = time.time()
-    start_time_human = datetime.datetime.utcnow()
     parser_main = argparse.ArgumentParser(prog='python detag.py') ### make sure the name is adequate when making the final script                      
     parser_main.add_argument("--tags",
                              help="path/to/tagfile.txt.",
@@ -59,7 +57,7 @@ def cli_parser():
 
     args = parser_main.parse_args()
 
-    #job_summary = ["starting Job with the following parameters at {} :".format(start_time_human)]
+    job_summary = ["starting Job with the following parameters:"]
     job = dict()
     job["heel_file"] = args.heel
     job["gsp"] = args.gsp
