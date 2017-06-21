@@ -876,7 +876,6 @@ def main():
                     res["status"][detagged_seq["status"]] = 1
                     res["detagged_seq"] = detagged_seq 
                     #result_list.append(res)
-                    reproc.process_result(res) ###
                     continue
 
                 seq, status = filter_full(seq_record=detagged_seq["seq_record"],
@@ -892,12 +891,10 @@ def main():
         if status:
             res["status"][status] = 1
             #result_list.append(res)
-            reproc.process_result(res) ###
             continue
         if len(seq.seq) < job["filter_minlen"]:
             res["status"]["too_short"] = 1
-            #result_list.append(res)
-            reproc.process_result(res) ###
+            #result_list.append(res)        
             continue
 
         if not detagged_seq:
@@ -909,27 +906,25 @@ def main():
 #            print detagged_seq["status"]
             res["status"][detagged_seq["status"]] = 1
             #result_list.append(res)
-            res["detagged_seq"] = detagged_seq 
-            reproc.process_result(res) ###                                                                                                                                                                       
+            #res["detagged_seq"] = detagged_seq 
             continue
         if len(detagged_seq["seq"]) < job["filter_minlen"]: 
             res["status"]["too_short"] = 1
-            res["detagged_seq"] = detagged_seq 
+            #res["detagged_seq"] = detagged_seq 
             #result_list.append(res)
-            reproc.process_result(res) ###                                                                                                                                                                       
             continue
 
         if job["filter_maxlen"] > 0 and len(detagged_seq["seq"]) > job["filter_maxlen"]:
             res["status"]["truncated"] = 1
             detagged_seq["seq"] = detagged_seq["seq"][:job["filter_maxlen"]]
             res["detagged_seq"] = detagged_seq
- #           continue
+            continue
 
         if job["filter_maxlen"] < 0:
             res["status"]["truncated"] = 1
             detagged_seq["seq"] = detagged_seq["seq"][:job["filter_maxlen"]]
             res["detagged_seq"] = detagged_seq
-#            continue
+            continue
         
 #        print res
         res["keep"] = True
