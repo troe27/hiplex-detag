@@ -17,7 +17,7 @@ The demultiplexer works by taking the read-structure into account, which is a re
 Due to the two-step PCR, all reads are structured the same way:
  They consist of the amplified region of interest, flanked on both sides with a primer-“heel” that is the same for all reads, and a sample-specific tag that is attached to all amplified regions of one sample.
 
-![read-structure](./figures/seq_strategy.png)
+![read-structure](./figures/Seq_strategy.png)
 
 # Usage:
 
