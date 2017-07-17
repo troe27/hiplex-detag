@@ -76,21 +76,55 @@ python detag.py [-h] --tags TAGS --heel HEEL [--pairedfastq]
                                       between 0 and 1. default 0.9
   --filtering FILTERING
                                       parameters for filtering.
-                                      **format:**
-                                      strategy:min_len:max_len:mean_qual:min_qual
+                                       **format:**
+                                       strategy:min_len:max_len:mean_qual:min_qual
                                       **default:**
                                       0:70:150:30:20
-                                      * **strategy** has a value of either  0, 1, 2 or 3.
-                                        0  indicates full filtering, before the program searches for tags in the sequences.
-                                        1 indicates no filtering of reads.
-                                        2 indicates filtering down to high-quality regions
-                                        3 indicates full filtering, but after the reads have been searched for the heel and tags.
-                                      * **min_len** is the minimum length for a read to be not filtered out.
-                                      * **max_len** is the maximum length for a read to be not filtered out.
-                                      * **mean_qual** is the minimum average  per-base phred-score that a read needs to have in order be retained.
-                                      * **min_qual** is the minimum phred-score a base needs to have in order to not be trimmed away in HQR-filtering.
+                                      **strategy** has a value of either  0, 1, 2 or 3.
+                                        *  0  indicates full filtering, before the program searches for tags in the sequences.
+                                        *  1 indicates no filtering of reads.
+                                        *  2 indicates filtering down to high-quality regions
+                                        *  3 indicates full filtering, but after the reads have been searched for the heel and tags.
+                                       **min_len** is the minimum length for a read to be not filtered out.
+                                       **max_len** is the maximum length for a read to be not filtered out.
+                                      **mean_qual** is the minimum average  per-base phred-score that a read needs to have in order be retained.
+                                      **min_qual** is the minimum phred-score a base needs to have in order to not be trimmed away in HQR-filtering.
 
 
   --gsp GSP             
                                       file with the gene specific primers, for additional
                                       diagnostics. same format as tag file, default = None
+
+## Input
+
+### Sequence data
+
+Currently the demultiplexer supports paired and unpaired fastq files. specified with the --pairedfastq --forward <reads_R1.fastq> --reverse <reads_R2.fastq>  or the --unpairedfastq <reads-fastq> option
+
+### Heel
+ the Heel can either be supplied directly as a string to the command, or as a text-file.
+ The textfile should contain one line carrying the heel sequence separated with a semicolon, such as this:
+      **CTCTCTATGGGCAGTC;CTCGTGTCTCCGACT**
+Comments within the file are useful, and marked by beginning with a # . all lines starting with a # will be ignored.
+### Tags
+Tags are presented in a similar fashion to the heel, except they need to be in a file, and each line carries the tagname, 5' tag and 3' tag separated by semicolons, such as this.
+    #tagname;5_prime;3_prime
+    Hiplex_tag_1;CACGCTG;CACGATC
+    Hiplex_tag_4;CATGTCG;CATAGTC
+    Hiplex_tag_5;CGCAGCA;CATGACT
+    Hiplex_tag_6;CTAGCGC;CGATCAG
+    Hiplex_tag_7;CTATGCA;CGTGCTC
+    Hiplex_tag_8;CTCACAC;CTATAGC
+    Hiplex_tag_9;CTCTGAG;CTATGTG
+    Hiplex_tag_10;CTGATCA;CTCAGAG
+    Hiplex_tag_11;CTGTATG;CTCTCAC
+    Hiplex_tag_21;GTATCTC;GCGATAC
+    Hiplex_tag_22;GTCAGTC;GCTAGAT
+
+note that all three prime tags have to be the same size, and all 5' tags also.
+
+
+### Gene specific primers
+
+Gene specific primers are supplied in the same format as the tags, but do not need to be the same size, but for matching purposes will be truncated to the minimum length for 3' and 5' respectively.
+Note that at this stage, information about the GSP is not used for filtering the reads whatsoever.
