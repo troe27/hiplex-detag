@@ -1,0 +1,71 @@
+processed_reads_in_total:	25000
+tag	valid_reads_per_tag	percentage_of_total_reads
+kept:	3031	12.124
+discarded:	21969	87.876
+			
+tag	valid_reads_per_tag
+Hiplex_tag_18	67
+Hiplex_tag_8	93
+Hiplex_tag_9	309
+Hiplex_tag_10	224
+Hiplex_tag_6	230
+Hiplex_tag_12	85
+Hiplex_tag_1	54
+Hiplex_tag_14	94
+Hiplex_tag_7	281
+Hiplex_tag_16	136
+Hiplex_tag_5	299
+Hiplex_tag_21	35
+Hiplex_tag_20	28
+Hiplex_tag_23	75
+Hiplex_tag_22	96
+Hiplex_tag_4	153
+Hiplex_tag_11	544
+Hiplex_tag_13	83
+Hiplex_tag_17	69
+Hiplex_tag_15	76
+			
+cause_for_failure	amount_of_reads	percentage_of_total_reads
+truncated	4	0.016
+too_short	13	0.052
+chimeric_tag	1402	5.608
+failed_pair	1401	5.604
+no_tag5	11418	45.672
+no_tag3	300	1.2
+no_primer5	2522	10.088
+no_primer3	4913	19.652
+			
+			
+most_common chimeras	amount_of_reads
+Hiplex_tag_11;Hiplex_tag_1	33
+Hiplex_tag_10;Hiplex_tag_11	27
+Hiplex_tag_7;Hiplex_tag_11	24
+Hiplex_tag_1;Hiplex_tag_11	21
+Hiplex_tag_9;Hiplex_tag_11	19
+Hiplex_tag_1;Hiplex_tag_7	17
+Hiplex_tag_5;Hiplex_tag_11	17
+Hiplex_tag_5;Hiplex_tag_9	16
+Hiplex_tag_14;Hiplex_tag_11	16
+Hiplex_tag_8;Hiplex_tag_11	15
+			
+chimeric_tags	amount_of_reads
+Hiplex_tag_18	50
+Hiplex_tag_8	98
+Hiplex_tag_9	227
+Hiplex_tag_10	200
+Hiplex_tag_11	391
+Hiplex_tag_6	154
+Hiplex_tag_1	187
+Hiplex_tag_14	93
+Hiplex_tag_7	227
+Hiplex_tag_4	164
+Hiplex_tag_5	180
+Hiplex_tag_21	60
+Hiplex_tag_20	71
+Hiplex_tag_23	80
+Hiplex_tag_22	129
+Hiplex_tag_16	111
+Hiplex_tag_13	114
+Hiplex_tag_17	85
+Hiplex_tag_12	93
+Hiplex_tag_15	90
