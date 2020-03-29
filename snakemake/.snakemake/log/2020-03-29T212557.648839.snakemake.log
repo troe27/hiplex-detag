@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 61 of /Users/tilro532/wd/hiplexdeplex/snakemake/snakefile.snek:
+Missing input files for rule index:
+/home/tilman/storage/ref_gg6a/GCF_000002315.5_GRCg6a_genomic.fna.gz

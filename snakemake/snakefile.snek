@@ -1,0 +1,143 @@
+configfile: "config/config.yaml"
+import os
+import numpy as np
+
+#wild = list()
+#wild1, = glob_wildcards(os.path.join(config["Raw_Folder"], "190502_Hiplex_tag_{sample}.fq"))
+#print(wild1)
+
+#wild = list(set(wild1))
+#wild = [sample for sample in wild if not sample.endswith("_call2")]
+wild = [i.split(";")[0] for i in open(config["tags"],"r").read().split("\n") if not i.startswith("#")]
+print(wild)
+ruleorder: transform > call
+ruleorder: detag_paired > detag_unpaired
+
+rule all:
+    input:
+        os.path.join(config["Data_Folder"],"all_merged.vcf")
+        #expand(os.path.join(config["Data_Folder"], "{sample}.cleaned.vcf.bgz.tbi"), sample=wild)
+
+rule detag_paired:
+    input:
+        tags = config["tags"],
+        heel = config["heel"],
+        forward = config["forward"],
+        reverse = config["reverse"],
+        gsp = config["gsp"]
+    output:
+        expand(os.path.join(config["Raw_Folder"],str(config["outprefix"])+"{sample}.fq"), sample=wild)
+    params:
+        paired = config["pairedparams"],
+        prefix = config["outprefix"],
+        h5score = config["h5score"],
+        h3score = config["h3score"],
+        filtering = config["filtering"]
+    conda:
+        "config/detag.yaml"
+    shell:
+        "python ../detag5.py --tags {input.tags} --heel {input.heel} --pairedfastq --forward {input.forward} --reverse {input.reverse} --pairedparams {params.paired} --outputprefix {params.prefix}  --h5score {params.h5score} --h3score {params.h3score} --filtering {params.filtering} --gsp {input.gsp}"
+
+rule detag_unpaired:
+    input:
+        tags = config["tags"],
+        heel = config["heel"],
+        unpairedfastq = config["unpairedfastq"],
+        gsp = config["gsp"]
+    output:
+        expand(os.path.join(config["Raw_Folder"],str(config["outprefix"])+"{sample}.fq"), sample=wild)
+    params:
+        paired = config["pairedparams"],
+        prefix = config["outprefix"],
+        h5score = config["h5score"],
+        h3score = config["h3score"],
+        filtering = config["filtering"]
+    conda:
+        "config/detag.yaml"
+    shell:
+        "python ../detag5.py --tags {input.tags} --heel {input.heel} --unpairedfastq {input.unpairedfastq} --pairedparams {params.paired} --outputprefix {params.prefix}  --h5score {params.h5score} --h3score {params.h3score} --filtering {params.filtering} --gsp {input.gsp}"
+
+# BWA
+rule index:
+    input:
+        config["reference"]
+    output:
+        config["reference"] + ".bwt"
+    conda:
+        "config/env.yaml"
+    shell:
+        "bwa index {input}"
+
+rule map:
+    input:
+        forw = os.path.join(config["Raw_Folder"], "{sample}_R1_001.fastq.gz"),
+        reve = os.path.join(config["Raw_Folder"], "{sample}_R2_001.fastq.gz"),
+        ref = config["reference"],
+        index = config["reference"] + ".bwt"
+    output:
+        temp(os.path.join(config["Data_Folder"], "{sample}.bam"))
+    threads:
+        4
+    conda:
+        "config/env.yaml"
+    shell:
+        "bwa mem -t {threads} {input.ref} {input.forw} {input.reve} | samtools sort -@{threads} -O BAM -o {output} "
+
+
+rule cleanBam:
+    input:
+        "{file}.bam"
+    output:
+        temp("{file}_call2.bam")
+    conda:
+        "config/env.yaml"
+    shell:
+        "samtools view -bh -q30 -f 0x02 {input} > {output}"
+
+# Samtools mpileup (for the complete file and subsamples)
+rule call:
+    input:
+        mapping = os.path.join(config["Data_Folder"], "{sample}_call2.bam"),
+        ref = config["reference"],
+    output:
+        temp(os.path.join(config["Data_Folder"], "{sample}.vcf.gz"))
+    priority:
+        50
+    conda:
+        "config/env.yaml"
+    shell:
+        "bcftools mpileup --skip-indels  -Oz -f {input.ref} {input.mapping} -o {output}"
+
+rule transform:
+    priority:
+        100
+    input:
+        rules.call.output
+    output:
+        protected(os.path.join(config["Data_Folder"], "{sample}.cleaned.vcf.bgz"))
+    conda:
+        "config/env.yaml"
+    shell:
+        "bcftools call --output {output}  --skip-indels -m {input}"
+
+# tabix
+rule tabix:
+    input:
+        "{sample}.cleaned.vcf.bgz"
+    output:
+        "{sample}.cleaned.vcf.bgz.tbi"
+    conda:
+        "config/env.yaml"
+    shell:
+        "tabix -p vcf {input}"
+
+rule merge_all:
+    input:
+        index=expand(os.path.join(config["Data_Folder"], "{sample}.cleaned.vcf.bgz.tbi"), sample=wild),
+        smpls=expand(os.path.join(config["Data_Folder"], "{sample}.cleaned.vcf.bgz"), sample=wild),
+    output:
+        os.path.join(config["Data_Folder"],"all_merged.vcf")
+    conda:
+        "config/env.yaml"
+    shell:
+        "bcftools merge -O z -o {output} {input.smpls}  && tabix -p vcf {output}"
