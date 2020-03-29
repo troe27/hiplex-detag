@@ -1,4 +1,0 @@
-Building DAG of jobs...
-MissingInputException in line 124 of /Users/tilro532/wd/hiplexdeplex/snakemake/snakefile.snek:
-Missing input files for rule tabix:
-../test_data/.cleaned.vcf.bgz
