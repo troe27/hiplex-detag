@@ -2,7 +2,7 @@
 import argparse
 from Bio.Seq import Seq
 from Bio.Alphabet import generic_dna
-from array import array
+#from array import array
 from Bio import SeqIO
 import gzip
 from collections import Counter
@@ -79,18 +79,22 @@ def cli_parser():
         job["filetype"] = "pairedfastq"
         job["forward_file"] = args.forward
         job["reverse_file"] = args.reverse
+        job["unpaired_file"] = args.unpairedfastq # 20200329
     if args.pairedfastq is not True:
         job["filetype"] = "unpairedfastq"
-    job["unpaired_file"] = args.unpairedfastq
+        job["unpaired_file"] = args.unpairedfastq
     if (args.unpairedfastq and args.forward) or (args.unpairedfastq and args.reverse )is not None:
         print " if the reads are not paired, you should not specify --forward and --reverse"
         exit()
 
     job_summary.append("output_prefix is {}".format(job["output_prefix"]))
     job_summary.append("file type is : {} ".format(job["filetype"]))
-    job_summary.append("input files are : {} , {}, {}".format(job['forward_file'],
+    if args.pairedfastq is True:
+        job_summary.append("input files are : {} , {}, {}".format(job['forward_file'],
                                                               job['reverse_file'],
                                                               job['unpaired_file']))
+    else:
+        job_summary.append("input file is :{}".format(job['unpaired_file']))
 
     if args.pairedparams is not None and args.pairedfastq is True:
         param_list = args.pairedparams.split(":")
@@ -320,6 +324,29 @@ class Qual:
     def __repr__ (self):
         return "Qual(name = " + self.name + ", quals = [" + (", ".join([str(x) for x in self.quals])) + "]"
 
+class Single:
+
+    def __init__(self, fastq_file):
+        # Try to open as gzipped file, if that fails, open as plain fasta
+        try:
+            handle = gzip.open(fastq_file, "r")
+            handle.next() # This fails if not a gzip file, goes into the exception
+            handle = gzip.open(fastq_file, "r")
+            self.fastq = SeqIO.parse(handle, "fastq")
+        except IOError:
+            self.fastq = SeqIO.parse(fastq_file, "fastq")
+        self.qual_present=True
+
+
+    def __iter__ (self):
+        return self
+
+    def next(self):
+        rec = self.fastq.next()
+        q = Qual(rec.id, rec.letter_annotations["phred_quality"])
+        rec.letter_annotations=dict()
+        return QualSeq([rec, q])
+
 class FastQPairQualSeq(QualSeq):
     def __init__(self, s1, s2, kmer, hsp, min):
         self.s1=s1
@@ -463,7 +490,6 @@ class DeTagSeq:
                     p5_pos = x
                     break
 
-            if p5_pos < 0:
                 result["rev"] = True
                 seq = seq.reverse_complement()
                 seq_str = str(seq)
@@ -831,11 +857,14 @@ def main():
     	gsp5 = get_tagset(tag_input_file=job["gsp"],end='5')[0]
 
     heel5, heel3, heelsum = get_heels(job["heel_file"])
-    seq_data = Pair(fastq_1=job["forward_file"],
-                    fastq_2=job["reverse_file"],
-                    hsp=job["hsp_overlap"],
-                    kmer=job["kmer_overlap"],
-                    min=job["min_overlap"])
+    if job["filetype"] is "pairedfastq":
+        seq_data = Pair(fastq_1=job["forward_file"],
+                        fastq_2=job["reverse_file"],
+                        hsp=job["hsp_overlap"],
+                        kmer=job["kmer_overlap"],
+                        min=job["min_overlap"])
+    else:
+        seq_data = Single(fastq_file=job["unpaired_file"])
     # init DeTagSeq
     if not job["gsp"]:
         dtseq = DeTagSeq(p3=heel3, p3s=job["h3score"], p5=heel5, p5s=job["h5score"], t3=tags3, t5=tags5)
@@ -912,11 +941,11 @@ def main():
 
         if not detagged_seq:
             detagged_seq, qual = dtseq.detag_seq(seq, qual)
-#	print detagged_seq
+            #print detagged_seq
 
             res["detagged_seq"] = detagged_seq
         if "status" in detagged_seq:
-#            print detagged_seq["status"]
+            #print detagged_seq["status"]
             res["status"][detagged_seq["status"]] = 1
             #result_list.append(res)
             res["detagged_seq"] = detagged_seq
@@ -933,15 +962,15 @@ def main():
             res["status"]["truncated"] = 1
             detagged_seq["seq"] = detagged_seq["seq"][:job["filter_maxlen"]]
             res["detagged_seq"] = detagged_seq
- #           continue
+            #continue
 
         if job["filter_maxlen"] < 0:
             res["status"]["truncated"] = 1
             detagged_seq["seq"] = detagged_seq["seq"][:job["filter_maxlen"]]
             res["detagged_seq"] = detagged_seq
-#            continue
+            #continue
 
-#        print res
+        #print res
         res["keep"] = True
         res["id"] = seq.id
         res["detag_qual"] = qual
